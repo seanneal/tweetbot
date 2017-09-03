@@ -99,3 +99,12 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+# configuration secrets for reddit
+praw.ini
+
+# configuration secrets for twitter
+tweepy.ini
+
+# database doesn't need control
+posted_posts.txt

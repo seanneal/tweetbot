@@ -1,82 +1,133 @@
-import praw
-import json
-import requests
-import tweepy
+'''
+First Version: Tweets contents from subreddits
+'''
 import time
+import configparser
+import praw
+import tweepy
 
-access_token = 'YOUR ACCESS TOKEN HERE'
-access_token_secret = 'YOUR ACCESS TOKEN SECRET HERE'
-consumer_key = 'YOUR CONSUMER KEY HERE'
-consumer_secret = 'YOUR CONSUMER SECRET HERE'
 
 def strip_title(title):
-	if len(title) < 94:
-		return title
-	else:
-		return title[:93] + "..."
+    '''
+    shortens title to fit in the tweet
+    '''
+    if len(title) < 94:
+        return title
+    else:
+        return title[:93] + "..."
+
 
 def tweet_creator(subreddit_info):
-	post_dict = {}
-	post_ids = []
-	print "[bot] Getting posts from Reddit"
-	for submission in subreddit_info.get_hot(limit=20):
-		post_dict[strip_title(submission.title)] = submission.url
-		post_ids.append(submission.id)
-	print "[bot] Generating short link using goo.gl"
-	mini_post_dict = {}
-	for post in post_dict:
-		post_title = post
-		post_link = post_dict[post]   		
-		short_link = shorten(post_link)
-		mini_post_dict[post_title] = short_link 
-	return mini_post_dict, post_ids
+    '''
+    grabs posts from reddit and formats them for processing
+    '''
+    post_dict = {}
+    post_ids = []
+    exclude_domain = 'self.' + subreddit_info.display_name
+    print('[bot] Getting posts from Reddit')
+    for submission in subreddit_info.hot(limit=20):
+        if not submission.domain == exclude_domain:
+            post_dict[strip_title(submission.title)] = submission.url
+            post_ids.append(submission.id)
+    return post_dict, post_ids
+
 
 def setup_connection_reddit(subreddit):
-	print "[bot] setting up connection with Reddit"
-	r = praw.Reddit('yasoob_python reddit twitter bot '
-				'monitoring %s' %(subreddit)) 
-	subreddit = r.get_subreddit(subreddit)
-	return subreddit
+    '''
+    Gets a connection to the subreddit.
+    uses the config in praw.ini  needs to be in working directory
+    see: http://praw.readthedocs.io/en/latest/getting_started/configuration/prawini.html
+    '''
+    print('[bot1] setting up connection with Reddit')
+    reddit = praw.Reddit('bot1', user_agent='bot1 user agent')
+    return reddit.subreddit(subreddit)
 
-def shorten(url):
-	headers = {'content-type': 'application/json'}
-	payload = {"longUrl": url}
-	url = "https://www.googleapis.com/urlshortener/v1/url"
-	r = requests.post(url, data=json.dumps(payload), headers=headers)
-	link = json.loads(r.text)['id']
-	return link
 
-def duplicate_check(id):
-	found = 0
-	with open('posted_posts.txt', 'r') as file:
-		for line in file:
-			if id in line:
-				found = 1
-	return found
+def duplicate_check(post_id):
+    '''
+    Checks the 'db' to see if this has already been posted
+    '''
+    with open('posted_posts.txt', 'r') as file:
+        for line in file:
+            if post_id in line:
+                return True
+    return False
 
-def add_id_to_file(id):
-	with open('posted_posts.txt', 'a') as file:
-		file.write(str(id) + "\n")
+
+def add_id_to_file(post_id):
+    '''
+    adds an entry to the 'db' to track what has been posted
+    '''
+    with open('posted_posts.txt', 'a') as file:
+        file.write(str(post_id) + "\n")
+
 
 def main():
-	subreddit = setup_connection_reddit('python')
-	post_dict, post_ids = tweet_creator(subreddit)
-	tweeter(post_dict, post_ids)
+    '''
+    connects the pieces to grab posts from reddit and throw them on twitter
+    '''
+    subreddit = setup_connection_reddit('ethereum')
+    post_dict, post_ids = tweet_creator(subreddit)
+    tweeter(post_dict, post_ids)
+
 
 def tweeter(post_dict, post_ids):
-	auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
-	auth.set_access_token(access_token, access_token_secret)
-	api = tweepy.API(auth)
-	for post, post_id in zip(post_dict, post_ids):
-		found = duplicate_check(post_id)
-		if found == 0:
-			print "[bot] Posting this link on twitter"
-			print post+" "+post_dict[post]+" #Python #reddit #bot"
-			api.update_status(post+" "+post_dict[post]+" #Python #reddit #bot")
-			add_id_to_file(post_id)
-			time.sleep(30)
-		else:
-			print "[bot] Already posted" 
+    '''
+    puts the posts on twitter
+    '''
+    config = read_config()
+    auth = tweepy.OAuthHandler(
+        config['consumer_key'], config['consumer_secret'])
+    auth.set_access_token(config['access_token'],
+                          config['access_token_secret'])
+    api = tweepy.API(auth)
+    for post, post_id in zip(post_dict, post_ids):
+        if not duplicate_check(post_id):
+            print('[bot] Posting this link on twitter')
+            print(post + ' ' + post_dict[post] + ' #bot')
+            api.update_status(
+                post + ' ' + post_dict[post] + ' #bot')
+            add_id_to_file(post_id)
+            time.sleep(30)
 
-if __name__ == '__main__':
-	main()
+
+def read_config():
+    '''
+    reads from 'tweepy.ini' which must be in the working directory
+    '''
+    config = configparser.ConfigParser()
+    config.read('tweepy.ini')
+    return {key: config['bot1'][key] for key in config['bot1']}
+
+
+def write_config(config_dict):
+    '''
+    write 'tweepy.ini' with updated values
+    '''
+    config = configparser.ConfigParser()
+    config.read('tweepy.ini')
+    for key in config_dict:
+        config['bot1'][key] = config_dict[key]
+    with open('tweepy.ini', 'w') as configfile:
+        config.write(configfile)
+
+
+def refresh_access_token():
+    '''
+    interactive function that gets the access token and access token secret
+    '''
+    config = read_config()
+    auth = tweepy.OAuthHandler(consumer_key=config['consumer_key'],
+                               consumer_secret=config['consumer_secret'])
+    print('navigate to: ' + auth.get_authorization_url())
+    print('return with the pin')
+    pin = input('type the pin here:')
+    auth.get_access_token(pin)
+    config['access_token'] = auth.access_token
+    config['access_token_secret'] = auth.access_token_secret
+    write_config(config)
+    return config
+
+
+# if __name__ == '__main__':
+#    main()
