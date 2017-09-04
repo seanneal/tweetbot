@@ -1,6 +1,7 @@
 '''
 First Version: Tweets contents from subreddits
 '''
+import sys
 import time
 import configparser
 import praw
@@ -85,8 +86,12 @@ def tweeter(post_dict, post_ids):
         if not duplicate_check(post_id):
             print('[bot] Posting this link on twitter')
             print(post + ' ' + post_dict[post] + ' #bot')
-            api.update_status(
-                post + ' ' + post_dict[post] + ' #bot')
+            try:
+                api.update_status(
+                    post + ' ' + post_dict[post] + ' #bot')
+            except:
+                e = sys.exc_info()[0]
+                print("Error: " + e)
             add_id_to_file(post_id)
             time.sleep(30)
 
