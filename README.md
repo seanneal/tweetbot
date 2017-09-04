@@ -22,3 +22,6 @@ Here are the things off the top of my mind that I want to add:
 * Add some NLP to generate hashtags on the fly 
 
 In general, just want to keep this bad boy running.   
+
+## tweets 
+To view the output: https://twitter.com/mseanneal
