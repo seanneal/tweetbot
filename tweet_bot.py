@@ -89,9 +89,8 @@ def tweeter(post_dict, post_ids):
             try:
                 api.update_status(
                     post + ' ' + post_dict[post] + ' #bot')
-            except:
-                e = sys.exc_info()[0]
-                print("Error: " + e)
+            except Exception as e:
+                print(e)
             add_id_to_file(post_id)
             time.sleep(30)
 
