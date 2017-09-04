@@ -129,5 +129,5 @@ def refresh_access_token():
     return config
 
 
-# if __name__ == '__main__':
-#    main()
+if __name__ == '__main__':
+    main()
