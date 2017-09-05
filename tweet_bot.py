@@ -81,8 +81,8 @@ def filter_posts(posts):
 
     should_be_filtered = \
         lambda post: post.domain in filtered_domains or \
-            duplicate_check(post.id) or \
-            post.stickied
+        duplicate_check(post.id) or \
+        post.stickied
 
     return (x for x in posts if not should_be_filtered(x))
 
@@ -173,9 +173,20 @@ def main():
     connects the pieces to grab posts from reddit and throw them on twitter
     '''
     reddit_connection = setup_reddit_connection()
-    posts = get_posts(reddit_connection, 'ethereum')
+    source_subreddits = {'ethereum', 'btc', 'bitcoin',
+                         'monero', 'dailyverse', 'dataisugly', 'ProgrammerHumor'}
+    posts = []
+    for source_subreddit in source_subreddits:
+        posts.append(get_posts(reddit_connection, source_subreddit))
+        time.sleep(30)
+    # should interleave all the posts since id should be cross site.
+    posts.sort(key=lambda x: x.id)
     tweeter(posts)
 
+def bootstrap_source(reddit_connection, source_subreddit):
+    for post in get_posts(reddit_connection, source_subreddit):
+        add_id_to_file(post.id)
+        time.sleep(30)
 
 if __name__ == '__main__':
     main()
