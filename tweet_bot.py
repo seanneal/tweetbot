@@ -8,17 +8,17 @@ import praw
 import tweepy
 
 Post = namedtuple('Post', ['id', 'title', 'url',
-                           'reddit_url', 'domain', 'user', 'subreddit_name'])
+                           'reddit_url', 'domain', 'user', 'subreddit_name', 'is_self', 'stickied'])
 
 
-def strip_title(title):
+def strip_title(title, max_len):
     '''
     shortens title to fit in the tweet
     '''
-    if len(title) < 94:
+    if len(title) <= max_len:
         return title
     else:
-        return title[:93] + "..."
+        return title[:max_len - 3] + "..."
 
 
 def get_posts(reddit_connection, subreddit_name):
@@ -35,7 +35,9 @@ def get_posts(reddit_connection, subreddit_name):
                     reddit_url=submission.shortlink,
                     domain=submission.domain,
                     user=submission.author.name,
-                    subreddit_name=submission.subreddit.display_name
+                    subreddit_name=submission.subreddit.display_name,
+                    is_self=submission.is_self,
+                    stickied=submission.stickied
                     )
         posts.append(post)
     return posts
@@ -70,15 +72,6 @@ def add_id_to_file(post_id):
         file.write(str(post_id) + "\n")
 
 
-def main():
-    '''
-    connects the pieces to grab posts from reddit and throw them on twitter
-    '''
-    reddit_connection = setup_reddit_connection()
-    posts = get_posts(reddit_connection, 'ethereum')
-    tweeter(posts)
-
-
 def filter_posts(posts):
     '''
     filters the posts
@@ -89,9 +82,27 @@ def filter_posts(posts):
         '''
         checks all relevant conditions
         '''
-        return post.domain not in filtered_domains
+        return post.domain in filtered_domains or duplicate_check(post.id) or post.stickied
 
     return (x for x in posts if not should_be_filtered(x))
+
+
+def convert_post_to_tweet(post):
+    '''
+    split the post into two tweets, one primary and one that is the reply.
+    keep all the communication here.
+    '''
+    user_preamble = 'u/{user} says: '.format(user=post.user)
+    # use 138 to reserve spaces to split url, hashtags and title
+    hash_tag = '#{tag}'.format(tag=post.subreddit_name)
+    shortened_title = strip_title(
+        post.title, 138 - 23 - len(user_preamble) - len(hash_tag))
+    primary_tweet = user_preamble + shortened_title + ' ' + post.url + ' ' + hash_tag
+    reply_tweet = ''
+    if not post.is_self:
+        reply_tweet = 'further discussion to be had here: {url}'.format(
+            url=post.reddit_url)
+    return primary_tweet, reply_tweet
 
 
 def tweeter(posts):
@@ -105,16 +116,18 @@ def tweeter(posts):
                           config['access_token_secret'])
     api = tweepy.API(auth)
     for post in filter_posts(posts):
-        if not duplicate_check(post.id):
-            print('[bot] Posting this link on twitter')
-            print(post.title + ' ' + post.url + ' #bot')
-            try:
-                api.update_status(
-                    post.title + ' ' + post.url + ' #bot')
-            except Exception as e:
-                print(e)
-            add_id_to_file(post.id)
-            time.sleep(30)
+        print('[bot] Posting these tweets')
+        primary_tweet, reply_tweet = convert_post_to_tweet(post)
+        print('\t' + primary_tweet)
+        print('\t\t' + reply_tweet)
+        try:
+            first_tweet_status = api.update_status(primary_tweet)
+            if '' != reply_tweet:
+                api.update_status(reply_tweet, first_tweet_status.id)
+        except Exception as e:
+            print(e)
+        add_id_to_file(post.id)
+        time.sleep(30)
 
 
 def read_config():
@@ -153,6 +166,15 @@ def refresh_access_token():
     config['access_token_secret'] = auth.access_token_secret
     write_config(config)
     return config
+
+
+def main():
+    '''
+    connects the pieces to grab posts from reddit and throw them on twitter
+    '''
+    reddit_connection = setup_reddit_connection()
+    posts = get_posts(reddit_connection, 'ethereum')
+    tweeter(posts)
 
 
 if __name__ == '__main__':
