@@ -7,6 +7,7 @@ from collections import namedtuple
 import praw
 import tweepy
 
+# defines our interface with reddit post model.
 Post = namedtuple('Post', ['id', 'title', 'url',
                            'reddit_url', 'domain', 'user', 'subreddit_name', 'is_self', 'stickied'])
 
@@ -78,11 +79,10 @@ def filter_posts(posts):
     '''
     filtered_domains = {'imgur.com'}
 
-    def should_be_filtered(post):
-        '''
-        checks all relevant conditions
-        '''
-        return post.domain in filtered_domains or duplicate_check(post.id) or post.stickied
+    should_be_filtered = \
+        lambda post: post.domain in filtered_domains or \
+            duplicate_check(post.id) or \
+            post.stickied
 
     return (x for x in posts if not should_be_filtered(x))
 
