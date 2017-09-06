@@ -27,9 +27,9 @@ def get_posts(reddit_connection, subreddit_name):
     grabs posts from reddit and formats them for processing
     '''
     posts = []
-    print('[bot] Getting posts from Reddit')
+    print('[bot] Getting posts from Reddit\\r\\{}'.format(subreddit_name))
     subreddit = reddit_connection.subreddit(subreddit_name)
-    for submission in subreddit.hot(limit=20):
+    for submission in subreddit.hot(limit=10):
         post = Post(id=submission.id,
                     title=submission.title,
                     url=submission.url,
@@ -39,7 +39,7 @@ def get_posts(reddit_connection, subreddit_name):
                     subreddit_name=submission.subreddit.display_name,
                     is_self=submission.is_self,
                     stickied=submission.stickied
-                    )
+                   )
         posts.append(post)
     return posts
 
@@ -173,20 +173,22 @@ def main():
     connects the pieces to grab posts from reddit and throw them on twitter
     '''
     reddit_connection = setup_reddit_connection()
-    source_subreddits = {'ethereum', 'btc', 'bitcoin',
-                         'monero', 'dailyverse', 'dataisugly', 'ProgrammerHumor'}
+    source_subreddits = {'ethereum', 'btc', 'bitcoin', 
+                         'Monero', 'dailyverse', 'dataisugly', 'ProgrammerHumor'}
     posts = []
     for source_subreddit in source_subreddits:
-        posts.append(get_posts(reddit_connection, source_subreddit))
+        posts.extend(get_posts(reddit_connection, source_subreddit))
         time.sleep(30)
     # should interleave all the posts since id should be cross site.
     posts.sort(key=lambda x: x.id)
     tweeter(posts)
 
+
 def bootstrap_source(reddit_connection, source_subreddit):
     for post in get_posts(reddit_connection, source_subreddit):
         add_id_to_file(post.id)
         time.sleep(30)
+
 
 if __name__ == '__main__':
     main()
