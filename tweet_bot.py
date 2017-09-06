@@ -11,6 +11,10 @@ import tweepy
 Post = namedtuple('Post', ['id', 'title', 'url',
                            'reddit_url', 'domain', 'user', 'subreddit_name', 'is_self', 'stickied'])
 
+# subreddits we're going to use.
+source_subreddits = {'ethereum', 'btc', 'bitcoin', 'dataengineering', 'datascience',
+                     'Monero', 'dailyverse', 'dataisugly', 'ProgrammerHumor'}
+
 
 def strip_title(title, max_len):
     '''
@@ -39,7 +43,7 @@ def get_posts(reddit_connection, subreddit_name):
                     subreddit_name=submission.subreddit.display_name,
                     is_self=submission.is_self,
                     stickied=submission.stickied
-                   )
+                    )
         posts.append(post)
     return posts
 
@@ -173,8 +177,6 @@ def main():
     connects the pieces to grab posts from reddit and throw them on twitter
     '''
     reddit_connection = setup_reddit_connection()
-    source_subreddits = {'ethereum', 'btc', 'bitcoin', 
-                         'Monero', 'dailyverse', 'dataisugly', 'ProgrammerHumor'}
     posts = []
     for source_subreddit in source_subreddits:
         posts.extend(get_posts(reddit_connection, source_subreddit))
