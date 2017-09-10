@@ -13,7 +13,7 @@ Post = namedtuple('Post', ['id', 'title', 'url',
 
 # subreddits we're going to use.
 source_subreddits = {'ethereum', 'btc', 'bitcoin', 'dataengineering', 'datascience',
-                     'Monero', 'dailyverse', 'dataisugly', 'ProgrammerHumor'}
+                     'Monero', 'dailyverse', 'dataisugly', 'ProgrammerHumor', 'seahawks', 'cowboys', 'SeattleWa'}
 
 
 def strip_title(title, max_len):
@@ -131,7 +131,7 @@ def tweeter(posts):
         except Exception as e:
             print(e)
         add_id_to_file(post.id)
-        time.sleep(30)
+        time.sleep(62)
 
 
 def read_config():
