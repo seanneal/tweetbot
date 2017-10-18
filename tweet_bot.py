@@ -125,9 +125,7 @@ def tweeter(posts):
         print('\t' + primary_tweet)
         print('\t\t' + reply_tweet)
         try:
-            first_tweet_status = api.update_status(primary_tweet)
-            if '' != reply_tweet:
-                api.update_status(reply_tweet, first_tweet_status.id)
+            first_tweet_status = api.update_status(primary_tweet + ' ' + reply_tweet)
         except Exception as e:
             print(e)
         add_id_to_file(post.id)
