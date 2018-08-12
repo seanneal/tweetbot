@@ -8,12 +8,31 @@ import praw
 import tweepy
 
 # defines our interface with reddit post model.
-Post = namedtuple('Post', ['id', 'title', 'url',
-                           'reddit_url', 'domain', 'user', 'subreddit_name', 'is_self', 'stickied'])
+Post = namedtuple('Post',
+                  ['id',
+                   'title',
+                   'url',
+                   'reddit_url',
+                   'domain',
+                   'user',
+                   'subreddit_name',
+                   'is_self',
+                   'stickied'])
 
 # subreddits we're going to use.
-source_subreddits = {'ethereum', 'btc', 'bitcoin', 'dataengineering', 'datascience',
-                     'Monero', 'dailyverse', 'dataisugly', 'ProgrammerHumor', 'seahawks', 'cowboys', 'SeattleWa'}
+source_subreddits = {
+    'ethereum',
+    'btc',
+    'bitcoin',
+    'dataengineering',
+    'datascience',
+    'Monero',
+    'dailyverse',
+    'dataisugly',
+    'ProgrammerHumor',
+    'seahawks',
+    'cowboys',
+    'SeattleWa'}
 
 
 def strip_title(title, max_len):
