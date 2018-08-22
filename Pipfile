@@ -9,6 +9,8 @@ tweepy = "*"
 
 [dev-packages]
 "autopep8" = "*"
+ipython = "*"
+pylint = "*"
 
 [requires]
 python_version = "3.6"
