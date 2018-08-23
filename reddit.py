@@ -5,7 +5,7 @@ import configparser
 import random
 import praw
 import duplicates
-from tweets import Tweet
+from twitter import Tweet
 
 
 class Reddit:

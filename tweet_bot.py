@@ -1,8 +1,9 @@
 '''
 First Version: Tweets contents from subreddits
 '''
-from reddit import Reddit 
-from tweets import Twitter 
+from reddit import Reddit
+from twitter import Twitter
+
 
 def main():
     '''
@@ -12,6 +13,7 @@ def main():
     twitter = Twitter()
     for tweet in reddit.get_tweets():
         twitter.send_tweet(tweet.Primary, tweet.Second)
+
 
 if __name__ == '__main__':
     main()

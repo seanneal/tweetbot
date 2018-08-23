@@ -1,19 +1,24 @@
-''' 
-First Version: Tweets contents from subreddits
+'''
+First Version:  contents from subreddits
 '''
 import configparser
 from collections import namedtuple
 import tweepy
 
-Tweet = namedtuple('Tweet', ['Primary','Second'])
+Tweet = namedtuple('Tweet', ['Primary', 'Second'])
+
 
 class Twitter:
 
     def __init__(self):
-        config = Tweets.__read_config()
-        auth = tweepy.OAuthHandler(config['consumer_key'], config['consumer_secret'])
-        auth.set_access_token(config['access_token'], config['access_token_secret'])
-        self.__api = tweepy.API(auth) 
+        config = Twitter.__read_config()
+        auth = tweepy.OAuthHandler(
+            config['consumer_key'],
+            config['consumer_secret'])
+        auth.set_access_token(
+            config['access_token'],
+            config['access_token_secret'])
+        self.__api = tweepy.API(auth)
 
     def send_tweet(self, first_tweet, reply_tweet):
         try:
@@ -21,7 +26,7 @@ class Twitter:
             if '' != reply_tweet:
                 self.__api.update_status(reply_tweet, first_tweet_status)
         except Exception as e:
-            print(e) 
+            print(e)
 
     @staticmethod
     def __read_config():
@@ -49,7 +54,7 @@ class Twitter:
         '''
         interactive function that gets the access token and access token secret
         '''
-        config = Tweets.__read_config()
+        config = Twitter.__read_config()
         auth = tweepy.OAuthHandler(consumer_key=config['consumer_key'],
                                    consumer_secret=config['consumer_secret'])
         print('navigate to: ' + auth.get_authorization_url())
@@ -58,6 +63,5 @@ class Twitter:
         auth.get_access_token(pin)
         config['access_token'] = auth.access_token
         config['access_token_secret'] = auth.access_token_secret
-        Tweets.__write_config(config)
+        Twitter.__write_config(config)
         return config
-
