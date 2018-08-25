@@ -107,4 +107,4 @@ praw.ini
 tweepy.ini
 
 # database doesn't need control
-posted_posts.txt
+posted_tweets.txt
