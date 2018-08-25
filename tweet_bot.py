@@ -1,6 +1,7 @@
 '''
 First Version: Tweets contents from subreddits
 '''
+from time import sleep
 from reddit import Reddit
 from twitter import Twitter
 
@@ -13,6 +14,7 @@ def main():
     twitter = Twitter()
     for tweet in reddit.get_tweets():
         twitter.send_tweet(tweet.Primary, tweet.Second)
+        sleep(90)
 
 
 if __name__ == '__main__':
