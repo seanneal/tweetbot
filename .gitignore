@@ -108,3 +108,4 @@ tweepy.ini
 
 # database doesn't need control
 posted_tweets.txt
+Pipfile.lock
