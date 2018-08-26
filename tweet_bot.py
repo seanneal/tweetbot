@@ -12,6 +12,8 @@ def main():
     '''
     reddit = Reddit()
     twitter = Twitter()
+    tweets = reddit.get_tweets()
+    print("sending {} tweets".format(len(tweets)))
     for tweet in reddit.get_tweets():
         twitter.send_tweet(tweet.Primary, tweet.Second)
         sleep(90)
