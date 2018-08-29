@@ -9,6 +9,9 @@ Tweet = namedtuple('Tweet', ['Primary', 'Second'])
 
 
 class Twitter:
+    '''
+        class to load config info and send tweets
+    '''
 
     def __init__(self):
         config = Twitter.__read_config()
@@ -20,13 +23,15 @@ class Twitter:
             config['access_token_secret'])
         self.__api = tweepy.API(auth)
 
-    def send_tweet(self, first_tweet, reply_tweet):
+    def send_tweet(self, message):
+        '''
+        sends a tweet and prints any errors.
+        '''
         try:
-            first_tweet_status = self.__api.update_status(first_tweet)
-            if '' != reply_tweet:
-                self.__api.update_status(reply_tweet, first_tweet_status)
-        except Exception as e:
-            print(e)
+            status = self.__api.update_status(message)
+        except tweepy.TweepError as tweep_error:
+            print(tweep_error)
+        return status
 
     @staticmethod
     def __read_config():
