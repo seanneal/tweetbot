@@ -17,7 +17,7 @@ def main():
     for tweet in reddit.get_tweets():
         twitter.send_tweet(tweet.Primary)
         if tweet.Second:
-            twitter.send_tweet(tweet.Second)
+            #twitter.send_tweet(tweet.Second)
         sleep(90)
 
 
