@@ -23,12 +23,15 @@ class Twitter:
             config['access_token_secret'])
         self.__api = tweepy.API(auth)
 
-    def send_tweet(self, message):
+    def send_tweet(self, message, reply_id=None):
         '''
         sends a tweet and prints any errors.
         '''
         try:
-            status = self.__api.update_status(message)
+            if reply_id:
+                status = self.__api.update_status(message, reply_id)
+            else:
+                status = self.__api.update_status(message)
         except tweepy.TweepError as tweep_error:
             print(tweep_error)
         return status

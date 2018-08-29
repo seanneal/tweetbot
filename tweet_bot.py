@@ -15,9 +15,9 @@ def main():
     tweets = reddit.get_tweets()
     print("sending {} tweets".format(len(tweets)))
     for tweet in reddit.get_tweets():
-        twitter.send_tweet(tweet.Primary)
+        status = twitter.send_tweet(tweet.Primary)
         if tweet.Second:
-            #twitter.send_tweet(tweet.Second)
+            twitter.send_tweet(tweet.Second, status.id)
         sleep(90)
 
 
