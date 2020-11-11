@@ -13,7 +13,7 @@ class Reddit:
     Encapsulate reddit access
     '''
 
-    def __init__(self, tweet_length=138):
+    def __init__(self, tweet_length=276):
         self.__reddit_connection = praw.Reddit(
             'bot1', user_agent='bot1 user agent')
         self.__tweet_length = tweet_length
